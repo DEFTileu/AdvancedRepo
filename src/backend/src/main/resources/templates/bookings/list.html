@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: page(#{booking.list.title}, ~{::content}, ~{})}">
+<body>
+
+<th:block th:fragment="content">
+    <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-6" th:text="#{booking.list.title}">My bookings</h1>
+
+        <div th:if="${#lists.isEmpty(entries)}"
+             class="bg-white rounded-2xl shadow-sm p-10 text-center text-slate-500"
+             th:text="#{booking.list.empty}">You haven't booked anything yet.</div>
+
+        <div th:unless="${#lists.isEmpty(entries)}" class="hidden md:block bg-white rounded-2xl shadow-sm overflow-hidden">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50 text-slate-500 text-left">
+                    <tr>
+                        <th class="px-5 py-3 font-medium">Type</th>
+                        <th class="px-5 py-3 font-medium">Item</th>
+                        <th class="px-5 py-3 font-medium" th:text="#{booking.total}">Total</th>
+                        <th class="px-5 py-3 font-medium" th:text="#{booking.created}">Booked at</th>
+                        <th class="px-5 py-3 font-medium"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <tr th:each="entry : ${entries}" class="hover:bg-slate-50 transition">
+                        <td class="px-5 py-4">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"
+                                  th:classappend="${entry.booking.type.name() == 'CAR'} ? 'bg-indigo-50 text-indigo-700' : (${entry.booking.type.name() == 'APARTMENT'} ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700')">
+                                <span th:if="${entry.booking.type.name() == 'CAR'}" th:text="#{booking.type.car}">Car</span>
+                                <span th:if="${entry.booking.type.name() == 'APARTMENT'}" th:text="#{booking.type.apartment}">Stay</span>
+                                <span th:if="${entry.booking.type.name() == 'COMBO'}" th:text="#{booking.type.combo}">Combo</span>
+                            </span>
+                        </td>
+                        <td class="px-5 py-4 text-slate-800">
+                            <span th:if="${entry.car.isPresent() and entry.apartment.isPresent()}">
+                                <span th:text="${entry.car.get().brand}">Toyota</span>
+                                <span th:text="${entry.car.get().model}">Camry</span>
+                                + <span th:text="${entry.apartment.get().title}">Cozy flat</span>
+                            </span>
+                            <span th:if="${entry.car.isPresent() and !entry.apartment.isPresent()}">
+                                <span th:text="${entry.car.get().brand}">Toyota</span>
+                                <span th:text="${entry.car.get().model}">Camry</span>
+                            </span>
+                            <span th:if="${!entry.car.isPresent() and entry.apartment.isPresent()}"
+                                  th:text="${entry.apartment.get().title}">Cozy flat</span>
+                            <span th:if="${!entry.car.isPresent() and !entry.apartment.isPresent()}"
+                                  th:text="#{booking.type.combo}">Combo</span>
+                        </td>
+                        <td class="px-5 py-4 font-semibold text-slate-900">
+                            <span th:text="${#numbers.formatInteger(entry.booking.totalPrice, 1, 'COMMA')}">42,000</span> ₸
+                        </td>
+                        <td class="px-5 py-4 text-slate-500"
+                            th:text="${#temporals.format(entry.booking.createdAt, 'dd MMM yyyy HH:mm')}">27 Apr 2026 10:00</td>
+                        <td class="px-5 py-4">
+                            <a th:href="@{|/bookings/${entry.booking.id}|}"
+                               class="text-indigo-600 hover:text-indigo-700 font-medium" th:text="#{button.viewAll}">View</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(entries)}" class="md:hidden flex flex-col gap-3">
+            <a th:each="entry : ${entries}" th:href="@{|/bookings/${entry.booking.id}|}"
+               class="bg-white rounded-2xl shadow-sm hover:shadow-lg transition p-4 flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"
+                          th:classappend="${entry.booking.type.name() == 'CAR'} ? 'bg-indigo-50 text-indigo-700' : (${entry.booking.type.name() == 'APARTMENT'} ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700')">
+                        <span th:if="${entry.booking.type.name() == 'CAR'}" th:text="#{booking.type.car}">Car</span>
+                        <span th:if="${entry.booking.type.name() == 'APARTMENT'}" th:text="#{booking.type.apartment}">Stay</span>
+                        <span th:if="${entry.booking.type.name() == 'COMBO'}" th:text="#{booking.type.combo}">Combo</span>
+                    </span>
+                    <span class="text-xs text-slate-400"
+                          th:text="${#temporals.format(entry.booking.createdAt, 'dd MMM HH:mm')}">27 Apr 10:00</span>
+                </div>
+                <div class="font-semibold text-slate-900">
+                    <span th:if="${entry.car.isPresent() and entry.apartment.isPresent()}">
+                        <span th:text="${entry.car.get().brand}">Toyota</span>
+                        <span th:text="${entry.car.get().model}">Camry</span>
+                        + <span th:text="${entry.apartment.get().title}">Flat</span>
+                    </span>
+                    <span th:if="${entry.car.isPresent() and !entry.apartment.isPresent()}">
+                        <span th:text="${entry.car.get().brand}">Toyota</span>
+                        <span th:text="${entry.car.get().model}">Camry</span>
+                    </span>
+                    <span th:if="${!entry.car.isPresent() and entry.apartment.isPresent()}"
+                          th:text="${entry.apartment.get().title}">Cozy flat</span>
+                    <span th:if="${!entry.car.isPresent() and !entry.apartment.isPresent()}"
+                          th:text="#{booking.type.combo}">Combo</span>
+                </div>
+                <div class="text-base font-bold text-slate-900">
+                    <span th:text="${#numbers.formatInteger(entry.booking.totalPrice, 1, 'COMMA')}">42,000</span> ₸
+                </div>
+            </a>
+        </div>
+    </section>
+</th:block>
+
+</body>
+</html>

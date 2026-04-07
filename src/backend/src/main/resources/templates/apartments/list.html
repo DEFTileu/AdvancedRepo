@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: page(#{apartments.title}, ~{::content}, ~{})}">
+<body>
+
+<th:block th:fragment="content">
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-6" th:text="#{apartments.title}">Places to stay</h1>
+
+        <div th:if="${#lists.isEmpty(apartments)}"
+             class="bg-white rounded-2xl shadow-sm p-10 text-center text-slate-500"
+             th:text="#{apartments.empty}">No apartments available right now.</div>
+
+        <div th:unless="${#lists.isEmpty(apartments)}"
+             class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <a th:each="apt : ${apartments}" th:href="@{|/apartments/${apt.id}|}"
+               class="bg-white rounded-2xl shadow-sm hover:shadow-lg transition overflow-hidden flex flex-col">
+                <div class="relative">
+                    <img th:src="@{|/apartments/${apt.id}/image|}" alt="" loading="lazy"
+                         onerror="this.style.display='none'"
+                         class="h-44 w-full object-cover rounded-t-2xl bg-gradient-to-br from-indigo-100 to-emerald-100"/>
+                    <span class="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">
+                        ★ <span th:text="${apt.rating}">4.7</span>
+                    </span>
+                    <span th:if="${!apt.available}"
+                          class="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700"
+                          th:text="#{car.unavailable}">Unavailable</span>
+                </div>
+                <div class="p-5 flex flex-col gap-2 flex-1">
+                    <h2 class="font-semibold text-slate-900 text-lg" th:text="${apt.title}">Cozy downtown flat</h2>
+                    <p class="text-sm text-slate-500 line-clamp-1" th:text="${apt.address}">Almaty, Abay st. 10</p>
+                    <div class="flex items-center gap-3 text-sm text-slate-500">
+                        <span><span th:text="${apt.bedrooms}">2</span> <span th:text="#{apt.bedrooms}">Bedrooms</span></span>
+                        <span class="w-1 h-1 rounded-full bg-slate-300"></span>
+                        <span><span th:text="${apt.guests}">3</span> <span th:text="#{apt.guests}">Guests</span></span>
+                    </div>
+                    <div class="mt-auto pt-3 flex items-center justify-between">
+                        <span class="text-base font-semibold text-slate-900"
+                              th:text="#{apt.price.night(${#numbers.formatInteger(apt.pricePerNight, 1, 'COMMA')})}">15,000 ₸ / night</span>
+                        <span class="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition shadow-sm"
+                              th:text="#{apt.book}">Book this place</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </section>
+</th:block>
+
+</body>
+</html>

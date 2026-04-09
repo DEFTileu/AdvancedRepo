@@ -17,17 +17,6 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-  thymeleaf:
-    cache: false
-    prefix: classpath:/templates/
-    suffix: .html
-    encoding: UTF-8
-
-  messages:
-    basename: messages
-    encoding: UTF-8
-    fallback-to-system-locale: false
-
   servlet:
     multipart:
       max-file-size: 5MB
@@ -38,6 +27,10 @@ server:
   servlet:
     session:
       tracking-modes: COOKIE
+
+app:
+  cors:
+    origin: ${APP_CORS_ORIGIN:http://localhost:5173}
 
 travel:
   city:

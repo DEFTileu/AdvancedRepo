@@ -7,7 +7,9 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Lob;
+import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +17,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
+@Table(name = "apartment", indexes = {
+    @Index(name = "idx_apt_city_avail_price", columnList = "city, available, pricePerNight")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -45,4 +50,7 @@ public class Apartment {
     private int bedrooms;
     private int guests;
     private boolean available;
+
+    @Column(length = 64)
+    private String city;
 }

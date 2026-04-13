@@ -1,0 +1,44 @@
+### Roots ###
+.idea/
+.vscode/
+.DS_Store
+*.sw?
+
+### Backend ###
+src/backend/HELP.md
+src/backend/.gradle
+src/backend/build/
+src/backend/*.iws
+src/backend/*.iml
+src/backend/*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### Frontend ###
+node_modules/
+dist
+dist-ssr
+*.local
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+dist
+dist-ssr
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+.env

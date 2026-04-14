@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDateTime;
+
 @Controller
 @RequestMapping("/cars")
 @RequiredArgsConstructor
@@ -45,7 +47,9 @@ public class CarController {
                        @Min(1) @Max(168) int hours,
                        Authentication auth) {
         Long userId = userService.byUsername(auth.getName()).getId();
-        Booking booking = bookingService.bookCar(userId, id, hours);
+        LocalDateTime start = LocalDateTime.now().plusDays(1);
+        LocalDateTime end = start.plusHours(hours);
+        Booking booking = bookingService.bookCar(userId, id, start, end);
         return "redirect:/bookings/" + booking.getId();
     }
 }

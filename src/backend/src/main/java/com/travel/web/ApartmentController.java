@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDateTime;
+
 @Controller
 @RequestMapping("/apartments")
 @RequiredArgsConstructor
@@ -45,7 +47,9 @@ public class ApartmentController {
                        @Min(1) @Max(30) int nights,
                        Authentication auth) {
         Long userId = userService.byUsername(auth.getName()).getId();
-        Booking booking = bookingService.bookApartment(userId, id, nights);
+        LocalDateTime start = LocalDateTime.now().plusDays(1);
+        LocalDateTime end = start.plusDays(nights);
+        Booking booking = bookingService.bookApartment(userId, id, start, end);
         return "redirect:/bookings/" + booking.getId();
     }
 }

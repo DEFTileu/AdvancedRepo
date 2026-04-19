@@ -1,42 +1,64 @@
 package com.travel.web;
 
-import jakarta.validation.ConstraintViolationException;
+import com.travel.service.BookingConflictException;
+import com.travel.service.UnsupportedFileTypeException;
+import com.travel.web.dto.error.ErrorResponse;
 import org.springframework.http.HttpStatus;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.MissingServletRequestParameterException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@ControllerAdvice
+import java.util.HashMap;
+import java.util.Map;
+
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> validation(MethodArgumentNotValidException ex) {
+        Map<String, String> fields = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(err ->
+                fields.put(err.getField(), err.getDefaultMessage()));
+        return ResponseEntity.badRequest().body(
+                new ErrorResponse("VALIDATION_FAILED", "Invalid request payload", fields));
+    }
+
+    @ExceptionHandler(BookingConflictException.class)
+    public ResponseEntity<ErrorResponse> conflict(BookingConflictException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.of("BOOKING_CONFLICT", ex.getMessage()));
+    }
+
+    @ExceptionHandler(UnsupportedFileTypeException.class)
+    public ResponseEntity<ErrorResponse> unsupportedType(UnsupportedFileTypeException ex) {
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                .body(ErrorResponse.of("UNSUPPORTED_MEDIA_TYPE", ex.getMessage()));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> forbidden(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ErrorResponse.of("FORBIDDEN", "You don't have access to this resource"));
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> unauth(AuthenticationException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponse.of("UNAUTHORIZED", ex.getMessage()));
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String notFound(IllegalArgumentException ex, Model model) {
-        model.addAttribute("status", 404);
-        model.addAttribute("message", ex.getMessage());
-        return "error";
+    public ResponseEntity<ErrorResponse> badRequest(IllegalArgumentException ex) {
+        return ResponseEntity.badRequest()
+                .body(ErrorResponse.of("BAD_REQUEST", ex.getMessage()));
     }
 
-    @ExceptionHandler(IllegalStateException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public String conflict(IllegalStateException ex, Model model) {
-        model.addAttribute("status", 409);
-        model.addAttribute("message", ex.getMessage());
-        return "error";
-    }
-
-    @ExceptionHandler({
-            ConstraintViolationException.class,
-            MethodArgumentTypeMismatchException.class,
-            MissingServletRequestParameterException.class
-    })
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public String badRequest(Exception ex, Model model) {
-        model.addAttribute("status", 400);
-        model.addAttribute("message", ex.getMessage());
-        return "error";
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> fallback(Exception ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ErrorResponse.of("INTERNAL_ERROR", "Unexpected error"));
     }
 }

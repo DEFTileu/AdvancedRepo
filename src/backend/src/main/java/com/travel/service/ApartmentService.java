@@ -22,6 +22,13 @@ public class ApartmentService {
         return repo.findByAvailableTrue();
     }
 
+    public List<Apartment> search(String city) {
+        if (city == null || city.isBlank()) {
+            return repo.findAll();
+        }
+        return repo.findByCityIgnoreCase(city.trim());
+    }
+
     public Apartment byId(Long id) {
         return repo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Apartment not found: " + id));

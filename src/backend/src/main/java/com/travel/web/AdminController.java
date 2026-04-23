@@ -4,202 +4,106 @@ import com.travel.domain.Apartment;
 import com.travel.domain.Car;
 import com.travel.service.ApartmentService;
 import com.travel.service.CarService;
+import com.travel.service.FileTypeValidator;
+import com.travel.web.dto.apartment.ApartmentResponse;
+import com.travel.web.dto.apartment.CreateApartmentRequest;
+import com.travel.web.dto.apartment.UpdateApartmentRequest;
+import com.travel.web.dto.car.CarResponse;
+import com.travel.web.dto.car.CreateCarRequest;
+import com.travel.web.dto.car.UpdateCarRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Base64;
 
-@Controller
-@RequestMapping("/admin")
+@RestController
+@RequestMapping("/api/admin")
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final CarService carService;
-    private final ApartmentService apartmentService;
+    private final CarService cars;
+    private final ApartmentService apartments;
+    private final FileTypeValidator fileValidator;
 
-    @GetMapping
-    public String dashboard(Model model) {
-        model.addAttribute("cars", carService.all());
-        model.addAttribute("apartments", apartmentService.all());
-        return "admin/dashboard";
-    }
-
-    // ===== Cars =====
-
-    @GetMapping("/cars/new")
-    public String newCarForm(Model model) {
-        model.addAttribute("car", Car.builder().available(true).build());
-        model.addAttribute("mode", "new");
-        return "admin/car-form";
-    }
-
-    @GetMapping("/cars/{id}/edit")
-    public String editCarForm(@PathVariable Long id, Model model) {
-        model.addAttribute("car", carService.byId(id));
-        model.addAttribute("mode", "edit");
-        return "admin/car-form";
-    }
+    // ------- Cars -------
 
     @PostMapping("/cars")
-    public String createCar(@RequestParam String brand,
-                            @RequestParam String model,
-                            @RequestParam int year,
-                            @RequestParam int pricePerHour,
-                            @RequestParam double latitude,
-                            @RequestParam double longitude,
-                            @RequestParam String fuelType,
-                            @RequestParam int seats,
-                            @RequestParam(defaultValue = "4.5") double rating,
-                            @RequestParam(defaultValue = "true") boolean available,
-                            @RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
-        Car car = Car.builder()
-                .brand(brand.trim())
-                .model(model.trim())
-                .year(year)
-                .pricePerHour(pricePerHour)
-                .latitude(latitude)
-                .longitude(longitude)
-                .fuelType(fuelType.trim())
-                .seats(seats)
-                .rating(rating)
-                .available(available)
+    @ResponseStatus(HttpStatus.CREATED)
+    public CarResponse createCar(@Valid @RequestBody CreateCarRequest req) {
+        Car c = Car.builder()
+                .brand(req.brand()).model(req.model()).year(req.year())
+                .pricePerHour(req.pricePerHour())
+                .latitude(req.latitude()).longitude(req.longitude())
+                .city(req.city()).fuelType(req.fuelType()).seats(req.seats())
+                .rating(req.rating()).available(req.available())
                 .build();
-        applyImage(image, car::setImageBase64, car::setImageMimeType);
-        Car saved = carService.save(car);
-        return "redirect:/admin/cars/" + saved.getId() + "/edit";
+        return CarResponse.from(cars.save(c));
     }
 
-    @PostMapping("/cars/{id}")
-    public String updateCar(@PathVariable Long id,
-                            @RequestParam String brand,
-                            @RequestParam String model,
-                            @RequestParam int year,
-                            @RequestParam int pricePerHour,
-                            @RequestParam double latitude,
-                            @RequestParam double longitude,
-                            @RequestParam String fuelType,
-                            @RequestParam int seats,
-                            @RequestParam(defaultValue = "4.5") double rating,
-                            @RequestParam(defaultValue = "false") boolean available,
-                            @RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
-        Car car = carService.byId(id);
-        car.setBrand(brand.trim());
-        car.setModel(model.trim());
-        car.setYear(year);
-        car.setPricePerHour(pricePerHour);
-        car.setLatitude(latitude);
-        car.setLongitude(longitude);
-        car.setFuelType(fuelType.trim());
-        car.setSeats(seats);
-        car.setRating(rating);
-        car.setAvailable(available);
-        applyImage(image, car::setImageBase64, car::setImageMimeType);
-        carService.save(car);
-        return "redirect:/admin/cars/" + id + "/edit";
+    @PutMapping("/cars/{id}")
+    public CarResponse updateCar(@PathVariable Long id, @Valid @RequestBody UpdateCarRequest req) {
+        Car c = cars.byId(id);
+        c.setBrand(req.brand()); c.setModel(req.model()); c.setYear(req.year());
+        c.setPricePerHour(req.pricePerHour());
+        c.setLatitude(req.latitude()); c.setLongitude(req.longitude());
+        c.setCity(req.city()); c.setFuelType(req.fuelType()); c.setSeats(req.seats());
+        c.setRating(req.rating()); c.setAvailable(req.available());
+        return CarResponse.from(cars.save(c));
     }
 
-    @PostMapping("/cars/{id}/delete")
-    public String deleteCar(@PathVariable Long id) {
-        carService.delete(id);
-        return "redirect:/admin";
+    @PostMapping(path = "/cars/{id}/image", consumes = "multipart/form-data")
+    public void uploadCarImage(@PathVariable Long id, @RequestParam("image") MultipartFile image) throws IOException {
+        String mime = fileValidator.requireImage(image);
+        Car c = cars.byId(id);
+        c.setImageBase64(Base64.getEncoder().encodeToString(image.getBytes()));
+        c.setImageMimeType(mime);
+        cars.save(c);
     }
 
-    // ===== Apartments =====
+    @DeleteMapping("/cars/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCar(@PathVariable Long id) { cars.delete(id); }
 
-    @GetMapping("/apartments/new")
-    public String newApartmentForm(Model model) {
-        model.addAttribute("apartment", Apartment.builder().available(true).build());
-        model.addAttribute("mode", "new");
-        return "admin/apartment-form";
-    }
-
-    @GetMapping("/apartments/{id}/edit")
-    public String editApartmentForm(@PathVariable Long id, Model model) {
-        model.addAttribute("apartment", apartmentService.byId(id));
-        model.addAttribute("mode", "edit");
-        return "admin/apartment-form";
-    }
+    // ------- Apartments -------
 
     @PostMapping("/apartments")
-    public String createApartment(@RequestParam String title,
-                                  @RequestParam String address,
-                                  @RequestParam int pricePerNight,
-                                  @RequestParam double latitude,
-                                  @RequestParam double longitude,
-                                  @RequestParam int bedrooms,
-                                  @RequestParam int guests,
-                                  @RequestParam(defaultValue = "4.5") double rating,
-                                  @RequestParam(defaultValue = "true") boolean available,
-                                  @RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
-        Apartment apt = Apartment.builder()
-                .title(title.trim())
-                .address(address.trim())
-                .pricePerNight(pricePerNight)
-                .latitude(latitude)
-                .longitude(longitude)
-                .bedrooms(bedrooms)
-                .guests(guests)
-                .rating(rating)
-                .available(available)
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApartmentResponse createApt(@Valid @RequestBody CreateApartmentRequest req) {
+        Apartment a = Apartment.builder()
+                .title(req.title()).address(req.address())
+                .pricePerNight(req.pricePerNight())
+                .latitude(req.latitude()).longitude(req.longitude())
+                .city(req.city()).bedrooms(req.bedrooms()).guests(req.guests())
+                .rating(req.rating()).available(req.available())
                 .build();
-        applyImage(image, apt::setImageBase64, apt::setImageMimeType);
-        Apartment saved = apartmentService.save(apt);
-        return "redirect:/admin/apartments/" + saved.getId() + "/edit";
+        return ApartmentResponse.from(apartments.save(a));
     }
 
-    @PostMapping("/apartments/{id}")
-    public String updateApartment(@PathVariable Long id,
-                                  @RequestParam String title,
-                                  @RequestParam String address,
-                                  @RequestParam int pricePerNight,
-                                  @RequestParam double latitude,
-                                  @RequestParam double longitude,
-                                  @RequestParam int bedrooms,
-                                  @RequestParam int guests,
-                                  @RequestParam(defaultValue = "4.5") double rating,
-                                  @RequestParam(defaultValue = "false") boolean available,
-                                  @RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
-        Apartment apt = apartmentService.byId(id);
-        apt.setTitle(title.trim());
-        apt.setAddress(address.trim());
-        apt.setPricePerNight(pricePerNight);
-        apt.setLatitude(latitude);
-        apt.setLongitude(longitude);
-        apt.setBedrooms(bedrooms);
-        apt.setGuests(guests);
-        apt.setRating(rating);
-        apt.setAvailable(available);
-        applyImage(image, apt::setImageBase64, apt::setImageMimeType);
-        apartmentService.save(apt);
-        return "redirect:/admin/apartments/" + id + "/edit";
+    @PutMapping("/apartments/{id}")
+    public ApartmentResponse updateApt(@PathVariable Long id, @Valid @RequestBody UpdateApartmentRequest req) {
+        Apartment a = apartments.byId(id);
+        a.setTitle(req.title()); a.setAddress(req.address());
+        a.setPricePerNight(req.pricePerNight());
+        a.setLatitude(req.latitude()); a.setLongitude(req.longitude());
+        a.setCity(req.city()); a.setBedrooms(req.bedrooms()); a.setGuests(req.guests());
+        a.setRating(req.rating()); a.setAvailable(req.available());
+        return ApartmentResponse.from(apartments.save(a));
     }
 
-    @PostMapping("/apartments/{id}/delete")
-    public String deleteApartment(@PathVariable Long id) {
-        apartmentService.delete(id);
-        return "redirect:/admin";
+    @PostMapping(path = "/apartments/{id}/image", consumes = "multipart/form-data")
+    public void uploadAptImage(@PathVariable Long id, @RequestParam("image") MultipartFile image) throws IOException {
+        String mime = fileValidator.requireImage(image);
+        Apartment a = apartments.byId(id);
+        a.setImageBase64(Base64.getEncoder().encodeToString(image.getBytes()));
+        a.setImageMimeType(mime);
+        apartments.save(a);
     }
 
-    // ===== Helpers =====
-
-    private void applyImage(MultipartFile image,
-                            java.util.function.Consumer<String> setBase64,
-                            java.util.function.Consumer<String> setMime) throws IOException {
-        if (image == null || image.isEmpty()) return;
-        String mime = image.getContentType();
-        if (mime == null || !mime.startsWith("image/")) {
-            throw new IllegalArgumentException("Uploaded file is not an image: " + mime);
-        }
-        byte[] bytes = image.getBytes();
-        setBase64.accept(Base64.getEncoder().encodeToString(bytes));
-        setMime.accept(mime);
-    }
+    @DeleteMapping("/apartments/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteApt(@PathVariable Long id) { apartments.delete(id); }
 }

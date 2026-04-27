@@ -6,26 +6,26 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Base64;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 public class ImageController {
 
     private final CarService carService;
     private final ApartmentService apartmentService;
 
-    @GetMapping("/cars/{id}/image")
+    @GetMapping("/api/cars/{id}/image")
     public ResponseEntity<byte[]> carImage(@PathVariable Long id) {
         var car = carService.byId(id);
         return image(car.getImageBase64(), car.getImageMimeType());
     }
 
-    @GetMapping("/apartments/{id}/image")
+    @GetMapping("/api/apartments/{id}/image")
     public ResponseEntity<byte[]> apartmentImage(@PathVariable Long id) {
         var apt = apartmentService.byId(id);
         return image(apt.getImageBase64(), apt.getImageMimeType());

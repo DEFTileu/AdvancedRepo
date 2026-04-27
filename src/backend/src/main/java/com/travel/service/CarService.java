@@ -22,6 +22,13 @@ public class CarService {
         return repo.findByAvailableTrue();
     }
 
+    public List<Car> search(String city) {
+        if (city == null || city.isBlank()) {
+            return repo.findAll();
+        }
+        return repo.findByCityIgnoreCase(city.trim());
+    }
+
     public Car byId(Long id) {
         return repo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Car not found: " + id));

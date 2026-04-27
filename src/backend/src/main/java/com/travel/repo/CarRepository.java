@@ -13,6 +13,8 @@ import java.util.Optional;
 public interface CarRepository extends JpaRepository<Car, Long> {
     List<Car> findByAvailableTrue();
 
+    List<Car> findByCityIgnoreCase(String city);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT c FROM Car c WHERE c.id = :id")
     Optional<Car> findByIdForUpdate(@Param("id") Long id);

@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: travel-mvp
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/travel}
+    driver-class-name: org.postgresql.Driver
+    username: ${SPRING_DATASOURCE_USERNAME:travel}
+    password: ${SPRING_DATASOURCE_PASSWORD:travel}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+    encoding: UTF-8
+
+  messages:
+    basename: messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+
+server:
+  port: 8080
+  servlet:
+    session:
+      tracking-modes: COOKIE
+
+travel:
+  city:
+    name: Almaty
+    latitude: 43.2389
+    longitude: 76.8897
+    zoom: 12

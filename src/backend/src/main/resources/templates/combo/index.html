@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: page(#{combo.title}, ~{::content}, ~{})}">
+<body>
+
+<th:block th:fragment="content">
+    <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-6">
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900" th:text="#{combo.title}">Smart trip combo</h1>
+            <p class="text-slate-500 mt-1" th:text="#{combo.subtitle}">One car + one place, picked just for you.</p>
+        </div>
+
+        <div th:if="${recommendation == null}"
+             class="bg-white rounded-2xl shadow-sm p-10 text-center text-slate-500">
+            <div class="text-5xl mb-3">🧭</div>
+            <p th:text="#{combo.empty}">Not enough availability right now.</p>
+        </div>
+
+        <div th:if="${recommendation != null}"
+             class="bg-white rounded-2xl shadow-sm overflow-hidden">
+            <div class="bg-gradient-to-r from-indigo-600 to-emerald-500 text-white px-6 py-5">
+                <div class="text-xs uppercase tracking-wider opacity-80" th:text="#{combo.suggested}">Suggested for you</div>
+                <div class="text-xl font-semibold mt-1" th:text="#{combo.title}">Smart trip combo</div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-stretch">
+                <div class="p-6">
+                    <div class="text-xs uppercase tracking-wider text-slate-400 mb-2" th:text="#{combo.car}">Your car</div>
+                    <img th:src="@{|/cars/${recommendation.car.id}/image|}" alt="" loading="lazy"
+                         onerror="this.style.display='none'"
+                         class="w-full h-40 object-cover rounded-xl bg-gradient-to-br from-indigo-100 to-emerald-100 mb-3"/>
+                    <div class="font-semibold text-slate-900 text-lg">
+                        <span th:text="${recommendation.car.brand}">Toyota</span>
+                        <span th:text="${recommendation.car.model}">Camry</span>
+                    </div>
+                    <div class="text-sm text-slate-500 mt-1">
+                        <span th:text="${recommendation.hours}">24</span> ×
+                        <span th:text="#{car.price.hour(${#numbers.formatInteger(recommendation.car.pricePerHour, 1, 'COMMA')})}">3,000 ₸ / hour</span>
+                    </div>
+                </div>
+
+                <div class="hidden md:flex items-center justify-center px-4">
+                    <span class="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl font-bold">+</span>
+                </div>
+                <div class="md:hidden flex items-center justify-center py-2">
+                    <span class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl font-bold">+</span>
+                </div>
+
+                <div class="p-6">
+                    <div class="text-xs uppercase tracking-wider text-slate-400 mb-2" th:text="#{combo.apartment}">Your stay</div>
+                    <img th:src="@{|/apartments/${recommendation.apartment.id}/image|}" alt="" loading="lazy"
+                         onerror="this.style.display='none'"
+                         class="w-full h-40 object-cover rounded-xl bg-gradient-to-br from-indigo-100 to-emerald-100 mb-3"/>
+                    <div class="font-semibold text-slate-900 text-lg" th:text="${recommendation.apartment.title}">Cozy flat</div>
+                    <div class="text-sm text-slate-500 mt-1">
+                        <span th:text="${recommendation.nights}">2</span> ×
+                        <span th:text="#{apt.price.night(${#numbers.formatInteger(recommendation.apartment.pricePerNight, 1, 'COMMA')})}">15,000 ₸ / night</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-100 p-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-slate-50">
+                <div>
+                    <div class="text-xs uppercase tracking-wider text-slate-400" th:text="#{combo.total}">Total</div>
+                    <div class="text-3xl font-bold text-slate-900 mt-1">
+                        <span th:text="${#numbers.formatInteger(recommendation.totalPrice, 1, 'COMMA')}">42,000</span> ₸
+                    </div>
+                </div>
+                <form th:if="${currentUser != null}" th:action="@{/combo/book}" method="post" class="flex">
+                    <input type="hidden" name="carId" th:value="${recommendation.car.id}"/>
+                    <input type="hidden" name="apartmentId" th:value="${recommendation.apartment.id}"/>
+                    <input type="hidden" name="hours" th:value="${recommendation.hours}"/>
+                    <input type="hidden" name="nights" th:value="${recommendation.nights}"/>
+                    <button type="submit"
+                            class="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition shadow-sm w-full sm:w-auto"
+                            th:text="#{combo.book.confirm}">Book the combo</button>
+                </form>
+                <a th:if="${currentUser == null}" th:href="@{/login}"
+                   class="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition shadow-sm w-full sm:w-auto"
+                   th:text="#{auth.signInToBook}">Sign in to book this</a>
+            </div>
+        </div>
+    </section>
+</th:block>
+
+</body>
+</html>

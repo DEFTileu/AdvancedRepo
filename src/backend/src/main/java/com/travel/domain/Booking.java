@@ -1,11 +1,6 @@
 package com.travel.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +9,11 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "booking", indexes = {
+    @Index(name = "idx_booking_car_dates", columnList = "carId, startAt, endAt"),
+    @Index(name = "idx_booking_apt_dates", columnList = "apartmentId, startAt, endAt"),
+    @Index(name = "idx_booking_user", columnList = "userId, createdAt")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -30,6 +30,10 @@ public class Booking {
     private Long userId;
     private Long carId;
     private Long apartmentId;
+
+    private LocalDateTime startAt;
+    private LocalDateTime endAt;
+
     private Integer hours;
     private Integer nights;
     private int totalPrice;

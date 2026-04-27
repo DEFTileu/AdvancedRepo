@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDateTime;
+
 @Controller
 @RequestMapping("/combo")
 @RequiredArgsConstructor
@@ -39,7 +41,12 @@ public class ComboController {
                        @RequestParam(defaultValue = "2") @Min(1) @Max(30) int nights,
                        Authentication auth) {
         Long userId = userService.byUsername(auth.getName()).getId();
-        Booking booking = bookingService.bookCombo(userId, carId, apartmentId, hours, nights);
+        LocalDateTime carStart = LocalDateTime.now().plusDays(1);
+        LocalDateTime carEnd = carStart.plusHours(hours);
+        LocalDateTime aptStart = carStart;
+        LocalDateTime aptEnd = aptStart.plusDays(nights);
+        Booking booking = bookingService.bookCombo(userId, carId, apartmentId,
+                carStart, carEnd, aptStart, aptEnd);
         return "redirect:/bookings/" + booking.getId();
     }
 }

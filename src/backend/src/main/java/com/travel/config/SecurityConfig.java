@@ -15,10 +15,15 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.DelegatingSecurityContextRepository;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -32,8 +37,14 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationConfiguration authConfig) throws Exception {
         AuthenticationManager authManager = authConfig.getAuthenticationManager();
 
+        SecurityContextRepository contextRepo = new DelegatingSecurityContextRepository(
+                new RequestAttributeSecurityContextRepository(),
+                new HttpSessionSecurityContextRepository()
+        );
+
         JsonAuthenticationFilter jsonLogin = new JsonAuthenticationFilter();
         jsonLogin.setAuthenticationManager(authManager);
+        jsonLogin.setSecurityContextRepository(contextRepo);
         jsonLogin.setAuthenticationSuccessHandler((req, res, auth) -> {
             res.setStatus(HttpServletResponse.SC_OK);
             res.setContentType("application/json");
@@ -48,6 +59,7 @@ public class SecurityConfig {
         return http
                 .cors(cors -> cors.configurationSource(corsSource()))
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**").disable())
+                .securityContext(ctx -> ctx.securityContextRepository(contextRepo))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
@@ -87,8 +99,12 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsSource() {
+        List<String> origins = Arrays.stream(corsOrigin.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .toList();
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(List.of(corsOrigin));
+        cfg.setAllowedOrigins(origins);
         cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         cfg.setAllowedHeaders(List.of("*"));
         cfg.setAllowCredentials(true);

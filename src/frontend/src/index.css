@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1F7A5A;
+  --color-primary-hover: #186145;
+  --color-primary-soft: #E8F3EE;
+  --color-accent: #6B4FBB;
+  --color-accent-hover: #553D9A;
+  --color-accent-soft: #EFEBFB;
+  --color-bg: #FAF8F4;
+  --color-surface: #FFFFFF;
+  --color-ink: #1A1A1A;
+  --color-muted: #6B6B6B;
+  --color-border: #EAE6DE;
+  --color-danger: #C8453A;
+  --color-star: #E8A317;
+
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 16px;
+  --radius-button: 12px;
+}
+
+@layer base {
+  html, body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    margin: 0;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+  .price {
+    font-variant-numeric: tabular-nums;
+  }
+  .font-display {
+    font-family: var(--font-display);
+  }
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+}

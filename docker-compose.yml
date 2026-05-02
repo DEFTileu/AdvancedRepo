@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: travel-postgres
+    container_name: anykrysha-postgres
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-travel}
       POSTGRES_USER: ${POSTGRES_USER:-travel}
@@ -16,11 +16,11 @@ services:
       timeout: 5s
       retries: 10
 
-  app:
+  backend:
     build:
       context: ./src/backend
       dockerfile: Dockerfile
-    container_name: travel-mvp
+    container_name: anykrysha-backend
     depends_on:
       postgres:
         condition: service_healthy
@@ -28,9 +28,22 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-travel}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-travel}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-travel}
+      APP_CORS_ORIGIN: ${APP_CORS_ORIGIN:-http://localhost:8081}
       JAVA_OPTS: "-Xms256m -Xmx512m"
     ports:
       - "8080:8080"
+
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+    container_name: anykrysha-frontend
+    depends_on:
+      - backend
+    ports:
+      - "8081:80"
 
 volumes:
   pg_data:

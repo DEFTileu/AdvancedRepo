@@ -1,0 +1,72 @@
+{
+  "nav": {
+    "brand": "AnyKrysha",
+    "map": "Map",
+    "cars": "Cars",
+    "apartments": "Stays",
+    "combo": "Combo",
+    "bookings": "My bookings",
+    "admin": "Admin"
+  },
+  "map": {
+    "title": "Find your trip in {{city}}",
+    "subtitle": "Pick a car, book a place, hit the road."
+  },
+  "cars": {
+    "title": "Cars near you",
+    "empty": "No cars available right now.",
+    "pricePerHour": "{{price}} ₸ / hour",
+    "book": "Book this car"
+  },
+  "apartments": {
+    "title": "Places to stay",
+    "empty": "No apartments available right now.",
+    "pricePerNight": "{{price}} ₸ / night",
+    "book": "Book this place"
+  },
+  "combo": {
+    "title": "Smart trip combo",
+    "subtitle": "One car + one place, picked just for you.",
+    "bookCta": "Book the combo"
+  },
+  "booking": {
+    "confirmedTitle": "Booking confirmed!",
+    "total": "Total",
+    "myTitle": "My bookings",
+    "empty": "You haven't booked anything yet."
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Welcome back to AnyKrysha.",
+      "cta": "Sign in",
+      "invalid": "Invalid username or password.",
+      "noAccount": "No account yet?"
+    },
+    "register": {
+      "title": "Create an account",
+      "subtitle": "Start booking trips in seconds.",
+      "cta": "Sign up",
+      "haveAccount": "Already have an account?"
+    },
+    "username": "Username",
+    "password": "Password",
+    "displayName": "Display name",
+    "demoHint": "Admin: admin / admin1234",
+    "signInToBook": "Sign in to book this"
+  },
+  "admin": {
+    "dashboard": "Admin dashboard",
+    "addCar": "Add car",
+    "addApartment": "Add apartment",
+    "save": "Save",
+    "delete": "Delete"
+  },
+  "common": {
+    "tenge": "₸",
+    "back": "Back",
+    "cancel": "Cancel",
+    "search": "Search",
+    "logout": "Logout"
+  }
+}

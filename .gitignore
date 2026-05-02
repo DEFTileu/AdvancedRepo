@@ -1,5 +1,8 @@
 ### Roots ###
+.claude/
 .idea/
+assets/
+docs/
 .vscode/
 .DS_Store
 *.sw?

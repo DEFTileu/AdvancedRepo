@@ -27,6 +27,9 @@ server:
   servlet:
     session:
       tracking-modes: COOKIE
+      cookie:
+        same-site: none
+        secure: true
 
 app:
   cors:
